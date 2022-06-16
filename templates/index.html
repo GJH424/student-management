@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>학생정보관리</title>
+  <style>
+    img{
+      margin-left:calc(50% - 400px)
+    }
+    #const-div{
+      text-align: center;
+    }
+    #id{
+      width:100px;
+      margin-right:10px;
+      height:20px
+    }
+    #name{
+      width:250px;
+      margin-right:10px;
+      height:20px
+    }
+    #age{
+      width:60px;
+      height:20px
+    }
+    #ajax-ul{
+      width:300px;
+      margin-left:calc(50% - 170px);
+    }
+
+
+    
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+        // 링크 색 바꾸기
+        function LinkSetColor(color){
+            var alist = document.querySelectorAll('a');
+            for(var i = 0; i < alist.length; i++)
+                alist[i].style.color = color;
+        }
+
+        // 바디 글자색 바꾸기
+        function BodySetColor(color){
+            document.querySelector('body').style.color = color;
+        }
+
+        // 바디 배경색 바꾸기
+        function BodySetBackgroundColor(color){
+            document.querySelector('body').style.backgroundColor = color;
+        }
+
+        // 주간, 야간모드
+        function day_night_handler(self) {
+            var target = document.querySelector('body');
+            if (self.value == '라이트모드') {
+                BodySetBackgroundColor('RGB(0,0,0)');
+                BodySetColor('white');
+                LinkSetColor('powderblue')
+                $("#ajax-ul").css("background-color", "black");
+                self.value = '다크모드';
+            }
+            else {
+                BodySetBackgroundColor('white');
+                BodySetColor('black');
+                LinkSetColor('blue')
+                $("#ajax-ul").css("background-color", "#e4e4da");
+                self.value = '라이트모드';
+            }
+        }
+  </script>
+</head>
+<body style="margin-top:1%">
+  <!-- <img src="class.jpeg" > -->
+  <img src="{{url_for('static', filename='class.jpeg') }}" >
+  <div id="const-div">
+  
+  <h1>학생 정보 관리 페이지</h1>
+  <input type="button" value="라이트모드" onclick="day_night_handler(this)">
+  <br><br>
+    학생 id: <input id="id" type="number" maxlength="10" >
+    학생 이름: <input id="name" type="text" maxlength="17">
+    학생 나이: <input id="age" type="number" min="0" max="999">
+
+    <br><br>저장: <input name="chk_info" type="radio" value="POST">
+            수정: <input name="chk_info" type="radio" value="PUT">
+            삭제: <input name="chk_info" type="radio" value="DELETE">
+    <button onclick="backendBtn()" style="margin-left:15px; height:30px; font-size:medium">
+      학생 저장/수정/삭제 하기
+    </button>
+
+  </div>
+  <div>
+  <strong>
+    <ul id="ajax-ul">
+
+    </ul>
+  </strong>
+</div>
+<script>
+
+  $.ajax({
+    type : "GET",
+    url : "/student",
+    data:{},
+    success: function(response){
+      // console.log(response)
+
+      for (let data of response){
+
+        $("#ajax-ul").append(`
+          <li>
+              id: ${data.id},
+              이름 : ${data.name},
+              나이 : ${data.age}
+          </li>
+        `)
+        $("#ajax-ul").css("background-color", "#e4e4da");
+                }
+
+    }
+  })
+
+
+  function backendBtn(){
+    var checked = $('input[name=chk_info]:checked').val();
+    if (checked === "POST"){
+      saveStudent()
+    }
+    if (checked === "PUT"){
+      putStudent()
+    }
+    if (checked === "DELETE"){
+      delStudent()
+    }
+  }
+
+  function saveStudent() {
+    const name = $("#name").val()
+    const age = $("#age").val()
+    $.ajax({
+      type: "POST",
+      url:"/student",
+      data:{
+        name: name,
+        age: age
+      },
+      success: function(response){
+        location.reload()
+      }
+    })
+  }
+
+  function putStudent(){
+    const id = $("#id").val()
+    const name = $("#name").val()
+    const age = $("#age").val()
+    $.ajax({
+      type:"PUT",
+      url:"/student",
+      data:{
+        id:id,
+        name:name,
+        age:age
+      },
+      success: function(response){
+        location.reload()
+      }
+
+    })
+  }
+
+  function delStudent(){
+    const id = $("#id").val()
+    $.ajax({
+      type:"DELETE",
+      url:`/student?id=${id}`,
+      data:{},
+      success: function(response){
+        location.reload()
+      }
+    })
+  }
+
+</script>
+</body>
+</html>
